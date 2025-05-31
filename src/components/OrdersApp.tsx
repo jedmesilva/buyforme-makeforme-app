@@ -1,4 +1,6 @@
+
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { 
   Menu, 
   Bell, 
@@ -33,6 +35,7 @@ const dashboardData = {
 };
 
 export default function OrdersApp() {
+  const navigate = useNavigate();
   const [activeOrderTab, setActiveOrderTab] = useState("todos");
   const [orderTypeFilter, setOrderTypeFilter] = useState(initialOrderTypeFilter);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -406,12 +409,18 @@ export default function OrdersApp() {
 
       {/* Navbar Inferior Fixa */}
       <div className="fixed bottom-0 left-0 right-0 flex justify-around items-center border-t bg-white p-3 shadow-lg z-50">
-        <button className="flex flex-col items-center py-2 px-4 rounded-lg text-gray-600">
+        <button 
+          onClick={() => navigate("/")}
+          className="flex flex-col items-center py-2 px-4 rounded-lg text-gray-600"
+        >
           <ShoppingBag className="w-5 h-5 mb-1" />
           <span className="text-xs font-medium">BuyForMe</span>
         </button>
         
-        <button className="flex flex-col items-center py-2 px-4 rounded-lg text-gray-600">
+        <button 
+          onClick={() => navigate("/")}
+          className="flex flex-col items-center py-2 px-4 rounded-lg text-gray-600"
+        >
           <Briefcase className="w-5 h-5 mb-1" />
           <span className="text-xs font-medium">MakeForMe</span>
         </button>
@@ -421,7 +430,10 @@ export default function OrdersApp() {
           <span className="text-xs font-medium">Pedidos</span>
         </button>
         
-        <button className="flex flex-col items-center py-2 px-4 rounded-lg text-gray-600">
+        <button 
+          onClick={() => navigate("/account")}
+          className="flex flex-col items-center py-2 px-4 rounded-lg text-gray-600"
+        >
           <div className="w-5 h-5 mb-1  flex items-center justify-center">
             <User className="w-3 h-3 text-gray-400" />
           </div>

@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { 
   Menu, 
   Bell, 
@@ -19,6 +20,7 @@ import { OrderCard } from "./OrderCard";
 import { FilterBar } from "./FilterBar";
 
 export default function BuyForMeApp() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("buy");
   const [selectedEstablishment, setSelectedEstablishment] = useState("todos");
   const [activeFilter, setActiveFilter] = useState("todos");
@@ -197,7 +199,7 @@ export default function BuyForMeApp() {
       {/* Navbar Inferior Fixa */}
       <div className="fixed bottom-0 left-0 right-0 flex justify-around items-center border-t bg-white p-3 shadow-lg z-50">
         <button 
-          onClick={() => setActiveTab("buy")} 
+          onClick={() => navigate("/")}
           className={`flex flex-col items-center py-2 px-4 rounded-lg transition-all transform hover:scale-105 ${
             activeTab === "buy" ? "bg-blue-50 text-blue-600 shadow-sm" : "text-gray-600"
           }`}
@@ -217,14 +219,17 @@ export default function BuyForMeApp() {
         </button>
         
         <button 
-          onClick={() => setShowOrderDetails(true)}
+          onClick={() => navigate("/orders")}
           className="flex flex-col items-center py-2 px-4 rounded-lg text-gray-600 transition-all transform hover:scale-105"
         >
           <ClipboardList className="w-5 h-5 mb-1" />
           <span className="text-xs font-medium">Pedidos</span>
         </button>
         
-        <button className="flex flex-col items-center py-2 px-4 rounded-lg text-gray-600 transition-all transform hover:scale-105">
+        <button 
+          onClick={() => navigate("/account")}
+          className="flex flex-col items-center py-2 px-4 rounded-lg text-gray-600 transition-all transform hover:scale-105"
+        >
           <div className="w-5 h-5 mb-1 bg-gray-400 rounded-full flex items-center justify-center">
             <User className="w-3 h-3 text-white" />
           </div>

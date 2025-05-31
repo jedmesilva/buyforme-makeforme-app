@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { 
   Menu, 
   Bell, 
@@ -25,6 +26,7 @@ import {
 } from "lucide-react";
 
 export default function AccountApp() {
+  const navigate = useNavigate();
   const [showBalance, setShowBalance] = useState(true);
   const [showCardsModal, setShowCardsModal] = useState(false);
   const [activeTab, setActiveTab] = useState("atividades");
@@ -435,17 +437,26 @@ export default function AccountApp() {
 
       {/* Navbar Inferior Fixa */}
       <div className="fixed bottom-0 left-0 right-0 flex justify-around items-center border-t bg-white p-3 shadow-lg z-50">
-        <button className="flex flex-col items-center py-2 px-4 rounded-lg text-gray-600">
+        <button 
+          onClick={() => navigate("/")}
+          className="flex flex-col items-center py-2 px-4 rounded-lg text-gray-600"
+        >
           <ShoppingBag className="w-5 h-5 mb-1" />
           <span className="text-xs font-medium">BuyForMe</span>
         </button>
         
-        <button className="flex flex-col items-center py-2 px-4 rounded-lg text-gray-600">
+        <button 
+          onClick={() => navigate("/")}
+          className="flex flex-col items-center py-2 px-4 rounded-lg text-gray-600"
+        >
           <Briefcase className="w-5 h-5 mb-1" />
           <span className="text-xs font-medium">MakeForMe</span>
         </button>
         
-        <button className="flex flex-col items-center py-2 px-4 rounded-lg text-gray-600">
+        <button 
+          onClick={() => navigate("/orders")}
+          className="flex flex-col items-center py-2 px-4 rounded-lg text-gray-600"
+        >
           <ClipboardList className="w-5 h-5 mb-1" />
           <span className="text-xs font-medium">Pedidos</span>
         </button>
