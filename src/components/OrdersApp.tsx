@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   Menu, 
@@ -16,24 +15,29 @@ import {
   User,
   ClipboardList,
   Briefcase,
-  Star,
   Package
 } from "lucide-react";
 
+// Estado inicial para o filtro de tipo de pedido
+const initialOrderTypeFilter = {
+  compra: true,
+  servico: true,
+};
+
+// Dados do dashboard simulados
+const dashboardData = {
+  totalPedidos: 15,
+  novosPedidos: 5,
+  ganhosHoje: 120.50,
+  tempoMedioEntrega: "45 min",
+};
+
 export default function OrdersApp() {
-  const [isDashboardExpanded, setIsDashboardExpanded] = useState(true);
   const [activeOrderTab, setActiveOrderTab] = useState("todos");
-  const [activeFilter, setActiveFilter] = useState("maior-prioridade");
+  const [orderTypeFilter, setOrderTypeFilter] = useState(initialOrderTypeFilter);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // Dados do dashboard
-  const dashboardData = {
-    saldoDia: 85.50,
-    pedidosAceitos: 12,
-    pedidosConcluidos: 8,
-    pedidosEnviados: 5
-  };
-
-  // Pedidos simulados
+  // Pedidos simulados com tipos corrigidos
   const pedidos = {
     aceitos: [
       {
@@ -91,54 +95,67 @@ export default function OrdersApp() {
     ]
   };
 
-  const filtros = [
-    { id: "maior-prioridade", label: "Maior prioridade" },
-    { id: "menor-prioridade", label: "Menor prioridade" },
-    { id: "mais-recente", label: "Mais recente" },
-    { id: "mais-antigo", label: "Mais antigo" },
-    { id: "mais-itens", label: "Mais itens" },
-    { id: "menos-itens", label: "Menos itens" }
-  ];
-
-  const getUrgenciaColor = (urgencia: string) => {
-    switch(urgencia) {
-      case "Alta": return "bg-red-100 text-red-800";
-      case "Média": return "bg-yellow-100 text-yellow-800";
-      case "Baixa": return "bg-green-100 text-green-800";
-      default: return "bg-gray-100 text-gray-800";
-    }
+  // Função para aplicar os filtros de tipo de pedido
+  const applyOrderTypeFilter = (pedido) => {
+    return orderTypeFilter[pedido.tipo];
   };
 
-  const getStatusColor = (status: string) => {
-    switch(status) {
-      case "aceito": return "bg-blue-100 text-blue-800";
-      case "em-andamento": return "bg-orange-100 text-orange-800";
-      case "concluido": return "bg-green-100 text-green-800";
-      case "aguardando": return "bg-yellow-100 text-yellow-800";
-      default: return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
+  // Função para formatar o status do pedido
+  const getStatusLabel = (status) => {
     switch(status) {
       case "aceito": return "Aceito";
-      case "em-andamento": return "Em andamento";
-      case "concluido": return "Concluído";
+      case "em-andamento": return "Em Andamento";
       case "aguardando": return "Aguardando";
-      default: return status;
+      case "concluido": return "Concluído";
+      default: return "Desconhecido";
     }
   };
 
-  // Filtrar pedidos baseado na tab ativa
+  // Função para definir a cor do status do pedido
+  const getStatusColor = (status) => {
+    switch(status) {
+      case "aceito": return "bg-green-100 text-green-600";
+      case "em-andamento": return "bg-blue-100 text-blue-600";
+      case "aguardando": return "bg-yellow-100 text-yellow-600";
+      case "concluido": return "bg-gray-100 text-gray-600";
+      default: return "bg-gray-100 text-gray-600";
+    }
+  };
+
+  // Função para definir a cor da urgência do pedido
+  const getUrgenciaColor = (urgencia) => {
+    switch(urgencia) {
+      case "Alta": return "bg-red-100 text-red-600";
+      case "Média": return "bg-yellow-100 text-yellow-600";
+      case "Baixa": return "bg-green-100 text-green-600";
+      default: return "bg-gray-100 text-gray-600";
+    }
+  };
+
+  // Função para lidar com a mudança de filtro de tipo de pedido
+  const handleOrderTypeFilterChange = (type) => {
+    setOrderTypeFilter({
+      ...orderTypeFilter,
+      [type]: !orderTypeFilter[type],
+    });
+  };
+
+  // Função para filtrar pedidos baseado na tab ativa
   const getPedidosFiltrados = () => {
+    let pedidosFiltrados;
     switch(activeOrderTab) {
       case "aceitos":
-        return pedidos.aceitos;
+        pedidosFiltrados = pedidos.aceitos;
+        break;
       case "enviados":
-        return pedidos.enviados;
+        pedidosFiltrados = pedidos.enviados;
+        break;
       default:
-        return [...pedidos.aceitos, ...pedidos.enviados];
+        pedidosFiltrados = [...pedidos.aceitos, ...pedidos.enviados];
+        break;
     }
+
+    return pedidosFiltrados.filter(applyOrderTypeFilter);
   };
 
   return (
@@ -147,100 +164,59 @@ export default function OrdersApp() {
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 pt-12 pb-6">
         {/* Navbar Superior */}
         <div className="flex items-center justify-between mb-4">
-          <button className="p-2 rounded-lg bg-white bg-opacity-10 backdrop-blur-sm hover:bg-opacity-20 transition-all">
+          <button className="p-2 rounded-lg bg-white bg-opacity-10 backdrop-blur-sm">
             <Menu className="w-6 h-6 text-white" />
           </button>
-          <h1 className="text-white text-xl font-bold">Meus Pedidos</h1>
-          <button className="p-2 rounded-lg bg-white bg-opacity-10 backdrop-blur-sm hover:bg-opacity-20 transition-all relative">
+          <h1 className="text-white text-xl font-bold">Pedidos</h1>
+          <button className="p-2 rounded-lg bg-white bg-opacity-10 backdrop-blur-sm relative">
             <Bell className="w-6 h-6 text-white" />
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
           </button>
         </div>
         
-        {/* Saudação */}
+        {/* Header Content */}
         <div className="mb-4">
-          <p className="text-blue-100 text-sm">Gerencie seus pedidos, Lucas</p>
+          <p className="text-blue-100 text-sm">Dashboard</p>
+          <h2 className="text-white text-2xl font-bold">
+            {dashboardData.totalPedidos} pedidos
+          </h2>
         </div>
 
-        {/* Dashboard Card Recolhível */}
-        <div className="bg-white bg-opacity-15 backdrop-blur-sm rounded-xl text-white overflow-hidden transform hover:scale-105 transition-all">
-          {/* Cabeçalho sempre visível com saldo do dia */}
-          <div 
-            className="p-4 cursor-pointer hover:bg-white hover:bg-opacity-5 transition-colors"
-            onClick={() => setIsDashboardExpanded(!isDashboardExpanded)}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="text-blue-100 text-sm">Saldo de hoje</p>
-                <div className="flex items-center gap-2">
-                  <DollarSign className="w-6 h-6" />
-                  <span className="text-2xl font-bold">
-                    {dashboardData.saldoDia.toFixed(2)}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-blue-200">
-                  {isDashboardExpanded ? "Recolher" : "Expandir"}
-                </span>
-                {isDashboardExpanded ? 
-                  <ChevronUp className="w-5 h-5 text-blue-200" /> : 
-                  <ChevronDown className="w-5 h-5 text-blue-200" />
-                }
-              </div>
+        {/* Dashboard Cards */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white bg-opacity-15 backdrop-blur-sm p-4 rounded-xl text-white">
+            <p className="text-blue-100 text-sm mb-1">Novos pedidos</p>
+            <div className="flex items-center gap-2">
+              <Package className="w-5 h-5" />
+              <span className="text-xl font-bold">{dashboardData.novosPedidos}</span>
             </div>
           </div>
-
-          {/* Conteúdo expansível */}
-          {isDashboardExpanded && (
-            <div className="px-4 pb-4">
-              <div className="h-px bg-white bg-opacity-20 mb-4"></div>
-              <div className="grid grid-cols-4 gap-4">
-                <div className="text-center">
-                  <div className="flex items-center justify-center mb-1">
-                    <CheckCircle className="w-4 h-4" />
-                  </div>
-                  <p className="text-lg font-semibold">{dashboardData.pedidosAceitos}</p>
-                  <p className="text-xs text-blue-100">Aceitos</p>
-                </div>
-                <div className="text-center">
-                  <div className="flex items-center justify-center mb-1">
-                    <Package className="w-4 h-4" />
-                  </div>
-                  <p className="text-lg font-semibold">{dashboardData.pedidosConcluidos}</p>
-                  <p className="text-xs text-blue-100">Concluídos</p>
-                </div>
-                <div className="text-center">
-                  <div className="flex items-center justify-center mb-1">
-                    <Send className="w-4 h-4" />
-                  </div>
-                  <p className="text-lg font-semibold">{dashboardData.pedidosEnviados}</p>
-                  <p className="text-xs text-blue-100">Enviados</p>
-                </div>
-                <div className="text-center">
-                  <div className="flex items-center justify-center mb-1">
-                    <History className="w-4 h-4" />
-                  </div>
-                  <button className="text-lg font-semibold hover:text-blue-200 transition-colors">
-                    <span className="text-xs">→</span>
-                  </button>
-                  <p className="text-xs text-blue-100">Histórico</p>
-                </div>
-              </div>
+          <div className="bg-white bg-opacity-15 backdrop-blur-sm p-4 rounded-xl text-white">
+            <p className="text-blue-100 text-sm mb-1">Ganhos hoje</p>
+            <div className="flex items-center gap-2">
+              <DollarSign className="w-5 h-5" />
+              <span className="text-xl font-bold">{dashboardData.ganhosHoje.toFixed(2)}</span>
             </div>
-          )}
+          </div>
+          <div className="bg-white bg-opacity-15 backdrop-blur-sm p-4 rounded-xl text-white col-span-2">
+            <p className="text-blue-100 text-sm mb-1">Tempo médio de entrega</p>
+            <div className="flex items-center gap-2">
+              <Clock className="w-5 h-5" />
+              <span className="text-xl font-bold">{dashboardData.tempoMedioEntrega}</span>
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="flex-1 p-4 space-y-4 overflow-y-auto pb-28">
-        {/* Tabs de Pedidos */}
+        {/* Tabs */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="flex border-b border-gray-200">
             <button
               onClick={() => setActiveOrderTab("todos")}
-              className={`flex-1 px-4 py-3 text-sm font-medium transition-all transform hover:scale-105 ${
-                activeOrderTab === "todos" 
-                  ? "bg-blue-50 text-blue-600 border-b-2 border-blue-600 shadow-sm" 
+              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                activeOrderTab === "todos"
+                  ? "bg-blue-50 text-blue-600 border-b-2 border-blue-600"
                   : "text-gray-600 hover:text-gray-800"
               }`}
             >
@@ -248,9 +224,9 @@ export default function OrdersApp() {
             </button>
             <button
               onClick={() => setActiveOrderTab("aceitos")}
-              className={`flex-1 px-4 py-3 text-sm font-medium transition-all transform hover:scale-105 ${
-                activeOrderTab === "aceitos" 
-                  ? "bg-blue-50 text-blue-600 border-b-2 border-blue-600 shadow-sm" 
+              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                activeOrderTab === "aceitos"
+                  ? "bg-blue-50 text-blue-600 border-b-2 border-blue-600"
                   : "text-gray-600 hover:text-gray-800"
               }`}
             >
@@ -258,49 +234,63 @@ export default function OrdersApp() {
             </button>
             <button
               onClick={() => setActiveOrderTab("enviados")}
-              className={`flex-1 px-4 py-3 text-sm font-medium transition-all transform hover:scale-105 ${
-                activeOrderTab === "enviados" 
-                  ? "bg-blue-50 text-blue-600 border-b-2 border-blue-600 shadow-sm" 
+              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                activeOrderTab === "enviados"
+                  ? "bg-blue-50 text-blue-600 border-b-2 border-blue-600"
                   : "text-gray-600 hover:text-gray-800"
               }`}
             >
-              Meus Pedidos
+              Enviados
             </button>
           </div>
         </div>
 
         {/* Filtros */}
-        <div className="bg-white p-4 rounded-xl shadow-sm">
-          <div className="flex items-center gap-2 mb-3">
-            <Filter className="w-4 h-4 text-gray-400" />
-            <span className="font-medium text-gray-700">Ordenar por</span>
-          </div>
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {filtros.map((filtro) => (
-              <button
-                key={filtro.id}
-                onClick={() => setActiveFilter(filtro.id)}
-                className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all transform hover:scale-105 ${
-                  activeFilter === filtro.id 
-                    ? "bg-blue-600 text-white shadow-md" 
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
-                {filtro.label}
-              </button>
-            ))}
-          </div>
+        <div className="bg-white rounded-xl shadow-sm p-4">
+          <button
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            className="flex items-center justify-between w-full text-gray-600"
+          >
+            <div className="flex items-center gap-2">
+              <Filter className="w-5 h-5" />
+              <span>Filtrar por tipo</span>
+            </div>
+            {isFilterOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+          </button>
+
+          {isFilterOpen && (
+            <div className="mt-4 space-y-2">
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  checked={orderTypeFilter.compra}
+                  onChange={() => handleOrderTypeFilterChange("compra")}
+                />
+                Compras
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  checked={orderTypeFilter.servico}
+                  onChange={() => handleOrderTypeFilterChange("servico")}
+                />
+                Serviços
+              </label>
+            </div>
+          )}
         </div>
 
         {/* Lista de Pedidos */}
         <div className="space-y-4">
           {getPedidosFiltrados().map((pedido) => (
-            <div key={pedido.id} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all transform hover:-translate-y-1">
+            <div key={pedido.id} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
               <div className="flex justify-between items-start mb-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="font-semibold text-gray-800">
-                      {pedido.cliente || `Aceito por: ${pedido.aceito_por}`}
+                      {'cliente' in pedido ? pedido.cliente : `Aceito por: ${pedido.aceito_por}`}
                     </span>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(pedido.status)}`}>
                       {getStatusLabel(pedido.status)}
@@ -316,16 +306,18 @@ export default function OrdersApp() {
                         <span className="font-medium">{pedido.estabelecimento}</span>
                       </div>
                       
-                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                        <MapPin className="w-4 h-4" />
-                        <span>{pedido.endereco}</span>
-                        {pedido.distancia && (
-                          <>
-                            <span>•</span>
-                            <span>{pedido.distancia}km</span>
-                          </>
-                        )}
-                      </div>
+                      {'endereco' in pedido && (
+                        <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                          <MapPin className="w-4 h-4" />
+                          <span>{pedido.endereco}</span>
+                          {'distancia' in pedido && (
+                            <>
+                              <span>•</span>
+                              <span>{pedido.distancia}km</span>
+                            </>
+                          )}
+                        </div>
+                      )}
 
                       <div className="text-gray-700 mb-2">
                         <span className="font-medium">{pedido.itens.length} {pedido.itens.length === 1 ? 'item' : 'itens'}</span>
@@ -334,25 +326,31 @@ export default function OrdersApp() {
                     </>
                   ) : (
                     <>
-                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                        <Briefcase className="w-4 h-4" />
-                        <span>{pedido.categoria}</span>
-                      </div>
+                      {'categoria' in pedido && (
+                        <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                          <Briefcase className="w-4 h-4" />
+                          <span>{pedido.categoria}</span>
+                        </div>
+                      )}
                       
-                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                        <MapPin className="w-4 h-4" />
-                        <span>{pedido.endereco}</span>
-                        {pedido.distancia && (
-                          <>
-                            <span>•</span>
-                            <span>{pedido.distancia}km</span>
-                          </>
-                        )}
-                      </div>
+                      {'endereco' in pedido && (
+                        <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                          <MapPin className="w-4 h-4" />
+                          <span>{pedido.endereco}</span>
+                          {'distancia' in pedido && (
+                            <>
+                              <span>•</span>
+                              <span>{pedido.distancia}km</span>
+                            </>
+                          )}
+                        </div>
+                      )}
                       
-                      <div className="text-gray-700 mb-2">
-                        <span className="font-medium">Serviço:</span> {pedido.servico}
-                      </div>
+                      {'servico' in pedido && (
+                        <div className="text-gray-700 mb-2">
+                          <span className="font-medium">Serviço:</span> {pedido.servico}
+                        </div>
+                      )}
                     </>
                   )}
                   
@@ -363,7 +361,7 @@ export default function OrdersApp() {
                     </div>
                   </div>
                   
-                  {pedido.observacoes && (
+                  {'observacoes' in pedido && pedido.observacoes && (
                     <p className="text-sm text-gray-600 italic">"{pedido.observacoes}"</p>
                   )}
                 </div>
@@ -376,28 +374,19 @@ export default function OrdersApp() {
                 </div>
               </div>
               
-              {/* Botões de ação baseado no status */}
-              <div className="flex gap-2">
-                {pedido.status === "aceito" && (
-                  <button className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-all transform hover:scale-105 active:scale-95">
-                    Iniciar
-                  </button>
-                )}
-                {pedido.status === "em-andamento" && (
-                  <button className="flex-1 bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 transition-all transform hover:scale-105 active:scale-95">
-                    Finalizar
-                  </button>
-                )}
-                {pedido.status === "concluido" && (
-                  <button className="flex-1 bg-gray-100 text-gray-600 py-3 rounded-lg font-medium cursor-not-allowed" disabled>
-                    Concluído
-                  </button>
-                )}
-                {pedido.status === "aguardando" && (
-                  <button className="flex-1 bg-yellow-100 text-yellow-800 py-3 rounded-lg font-medium cursor-not-allowed" disabled>
-                    Aguardando aceite
-                  </button>
-                )}
+              <div className="flex justify-end gap-2">
+                <button className="bg-blue-100 text-blue-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors">
+                  <div className="flex items-center gap-2">
+                    <Send className="w-4 h-4" />
+                    <span>Enviar</span>
+                  </div>
+                </button>
+                <button className="bg-gray-100 text-gray-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
+                  <div className="flex items-center gap-2">
+                    <History className="w-4 h-4" />
+                    <span>Histórico</span>
+                  </div>
+                </button>
               </div>
             </div>
           ))}
@@ -408,31 +397,33 @@ export default function OrdersApp() {
           <div className="text-center py-12">
             <ClipboardList className="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">Nenhum pedido encontrado</p>
-            <p className="text-sm text-gray-400">Os pedidos aparecerão aqui quando disponíveis</p>
+            <p className="text-sm text-gray-400">
+              Verifique os filtros ou tente novamente mais tarde.
+            </p>
           </div>
         )}
       </div>
 
       {/* Navbar Inferior Fixa */}
       <div className="fixed bottom-0 left-0 right-0 flex justify-around items-center border-t bg-white p-3 shadow-lg z-50">
-        <button className="flex flex-col items-center py-2 px-4 rounded-lg text-gray-600 transition-all transform hover:scale-105">
+        <button className="flex flex-col items-center py-2 px-4 rounded-lg text-gray-600">
           <ShoppingBag className="w-5 h-5 mb-1" />
           <span className="text-xs font-medium">BuyForMe</span>
         </button>
         
-        <button className="flex flex-col items-center py-2 px-4 rounded-lg text-gray-600 transition-all transform hover:scale-105">
+        <button className="flex flex-col items-center py-2 px-4 rounded-lg text-gray-600">
           <Briefcase className="w-5 h-5 mb-1" />
           <span className="text-xs font-medium">MakeForMe</span>
         </button>
         
-        <button className="flex flex-col items-center py-2 px-4 rounded-lg bg-blue-50 text-blue-600 shadow-sm">
+        <button className="flex flex-col items-center py-2 px-4 rounded-lg bg-blue-50 text-blue-600">
           <ClipboardList className="w-5 h-5 mb-1" />
           <span className="text-xs font-medium">Pedidos</span>
         </button>
         
-        <button className="flex flex-col items-center py-2 px-4 rounded-lg text-gray-600 transition-all transform hover:scale-105">
-          <div className="w-5 h-5 mb-1 bg-gray-400 rounded-full flex items-center justify-center">
-            <User className="w-3 h-3 text-white" />
+        <button className="flex flex-col items-center py-2 px-4 rounded-lg text-gray-600">
+          <div className="w-5 h-5 mb-1  flex items-center justify-center">
+            <User className="w-3 h-3 text-gray-400" />
           </div>
           <span className="text-xs font-medium">Conta</span>
         </button>
